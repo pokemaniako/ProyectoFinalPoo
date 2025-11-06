@@ -1,0 +1,23 @@
+
+"""
+classDiagram
+    class Jugador {
+        - Nombre: string
+        - Dni: string
+        - tipo: string
+        - Sedes : List<Sede>
+        + AgregarSede(sede : Sede) : void
+        + MostrarInfo() : void
+    }
+
+
+
+    Universidad "1" o-- "*" Sede: Contiene >
+    Sede "1" o--"*" Facultad: Agrupa
+    Facultad "1" o--"*" Carrera: Ofrece
+    Facultad "1" o--"*" Docente: Cuenta
+    Carrera "1" o--"*" Alumno: Tiene
+
+    Persona <|-- Docente
+    Persona <|-- Alumno
+"""
