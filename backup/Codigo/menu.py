@@ -3,8 +3,8 @@ import apuestas as ap
 
 def MenuDeInicio():
     while True:
-        print(""" 
-              ____________________________________________________________________________________
+        print("""                                                                                             
+              ____________________________________________________________________________________ 
              /_____/_____/_____/_____/_____/_____/_____/_____/_____/_____/_____/_____/_____/_____/ 
             ._. /\     __________.__                                 .__    .___           /\  ._. 
             | | \ \    \______   \__| ____   _______  __ ____   ____ |__| __| _/____      / /  | | 
@@ -69,13 +69,13 @@ def MenuDeInicio():
         print("\t" + "=" * 52)
         rpta = input("\tSeleccione una opción: ")
         if rpta == "1":
-            Jugador = jugadores.RegistrarJugador()
-            if Jugador:
-                MenuJugador(Jugador)
+            jugador = jugadores.RegistrarJugador()
+            if jugador:
+                MenuJugador(jugador)
         elif rpta == "2":
-            Jugador = jugadores.IniciarSesion()
-            if Jugador:
-                MenuJugador(Jugador)
+            jugador = jugadores.IniciarSesion()
+            if jugador:
+                MenuJugador(jugador)
         elif rpta == "3":
             print("""
             ::::::::::::::::::::::::::::::::::::::::::--------------------------------------
@@ -123,10 +123,10 @@ def MenuDeInicio():
         else:
             print("\tOpción inválida. Por favor, intente nuevamente.")
 
-def MenuJugador(Jugador):
+def MenuJugador(jugador):
     while True:
         print("\n" + "          ************************************************")
-        print(f"\t  Jugador: {Jugador.Nombre}")
+        print(f"\t  Jugador: {jugador['nombre']}")
         print("          ************************************************")
         print("""\t1.- Rojo o Negro:
                     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -218,25 +218,21 @@ def MenuJugador(Jugador):
                     """)        
         print("\t  4. Ver historial de apuestas")
         print("\t  5. Consultar saldo")
-        print("\t  6. Ver gráfico de apuestas")
-        print("\t  7. Cerrar sesión")
+        print("\t  6. Cerrar sesión")
         print("\t" + "=" * 52)
-        Opcion = input("\tSeleccione una opción: ")
-        if Opcion == "1":
-            ap.ApostarRojoNegro(Jugador)
-        elif Opcion == "2":
-            ap.Ruleta(Jugador)
-        elif Opcion == "3":
-            ap.LanzaElDado(Jugador)
-        elif Opcion == "4":
-            ap.VerHistorial(Jugador)
-        elif Opcion == "5":
-            print(f"\tJugador: {Jugador.Nombre} {Jugador.ApellidoPaterno}")
-            print(f"\tSaldo actual: {Jugador.ConsultarSaldo():.2f} soles")
-        elif Opcion == "6":
-            from Csv.graficos import GraficarApuestasPorUsuario
-            GraficarApuestasPorUsuario(Jugador.Usuario)
-        elif Opcion == "7":
+        opcion = input("\tSeleccione una opción: ")
+        if opcion == "1":
+            ap.ApostarRojoNegro(jugador)
+        elif opcion == "2":
+            ap.Ruleta(jugador)
+        elif opcion == "3":
+            ap.LanzaElDado(jugador)
+        elif opcion == "4":
+            ap.VerHistorial(jugador)
+        elif opcion == "5":
+            print(f"\tJugador: {jugador['nombre']} {jugador['apellido_paterno']}")
+            print(f"\tSaldo actual: {jugador['saldo']:.2f} soles")
+        elif opcion == "6":
             print("\tSesión cerrada. ¡Hasta luego!")
             break
         else:

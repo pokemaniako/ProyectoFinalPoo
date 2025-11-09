@@ -1,23 +1,29 @@
-
-"""
+#Opcion 1, mejorar todo el diagrama e Implementar el uso de las funciones de jugador, de las apuestas, poner nexos del main y ya
+#Opcion 2, dividir el diagrama en 2 partes, para usuario y para apuestas, cada uno con sus respectivas funciones y que hacen estas funciones, que parametros
+#tienen, variables, etc...
 classDiagram
     class Jugador {
-        - Nombre: string
-        - Dni: string
-        - tipo: string
-        - Sedes : List<Sede>
-        + AgregarSede(sede : Sede) : void
-        + MostrarInfo() : void
+        - Nombre : string
+        - ApellidoPaterno : string
+        - ApellidoMaterno : string
+        - Genero : string
+        - Edad : int
+        - Usuario : string
+        - Contrasena : string
+        - Saldo : float
     }
 
+    class Validador {
+        + ValidarTexto()
+        + ValidarGenero()
+        + ValidarNumero()
+        + ValidarDecimal()
+    }
 
+    class SistemaCasino {
+        + RegistrarJugador()
+    }
 
-    Universidad "1" o-- "*" Sede: Contiene >
-    Sede "1" o--"*" Facultad: Agrupa
-    Facultad "1" o--"*" Carrera: Ofrece
-    Facultad "1" o--"*" Docente: Cuenta
-    Carrera "1" o--"*" Alumno: Tiene
-
-    Persona <|-- Docente
-    Persona <|-- Alumno
-"""
+    SistemaCasino "1" o-- "1" Jugador : Crea >
+    SistemaCasino "1" o-- "*" Validador : Usa >
+#has peee gonza
