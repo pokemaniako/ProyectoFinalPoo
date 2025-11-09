@@ -1,4 +1,5 @@
 from random import choice, randint
+import os
 from validadores import Validador, ValidarMontoPositivo, ValidarNumeroRuleta, ValidarNumerosDado
 from colores import Colors
 import data
@@ -32,7 +33,8 @@ def ApostarRojoNegro(Jugador):
         "Resultado": Resultado,
         "SaldoRestante": Jugador.ConsultarSaldo()
     }
-    input("\tPresiona Enter para continuar...")
+    input(f"\t{Colors.BLUE}Presiona Enter para continuar...{Colors.RESET}")
+    os.system('cls' if os.name == 'nt' else 'clear')
     data.AddApuesta(Apuesta)
     
 
@@ -63,7 +65,8 @@ def Ruleta(Jugador):
         "SaldoRestante": Jugador.ConsultarSaldo()
     }
     data.AddApuesta(Apuesta)
-    input("\tPresiona Enter para continuar...")
+    input(f"\t{Colors.BLUE}Presiona Enter para continuar...{Colors.RESET}")
+    os.system('cls' if os.name == 'nt' else 'clear')
     
 def VerHistorial(Jugador):
     print(f"\t Historial apuestas de {Jugador.Usuario}")
@@ -78,7 +81,7 @@ def VerHistorial(Jugador):
     else:
         print("\t No hay historial de apuestas")
     input("\tPresiona Enter para continuar...")
-    
+    os.system('cls' if os.name == 'nt' else 'clear')
 def LanzaElDado(Jugador):
     print("\t LANZA EL DADO")
     print("\t Has seleccionado lanzar el dado")
@@ -128,4 +131,5 @@ def LanzaElDado(Jugador):
         "SaldoRestante": Jugador.ConsultarSaldo()
     }
     data.AddApuesta(Apuesta)
-    input("\tPresiona Enter para continuar...")
+    input(f"\t{Colors.BLUE}Presiona Enter para continuar...{Colors.RESET}")
+    os.system('cls' if os.name == 'nt' else 'clear')

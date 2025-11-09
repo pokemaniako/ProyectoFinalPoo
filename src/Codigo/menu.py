@@ -1,7 +1,7 @@
 import jugadores
 import apuestas as ap
 from colores import Colors
-
+import os
 def MenuDeInicio():
     while True:
         print(f"""{Colors.BLUE}
@@ -264,11 +264,15 @@ ____________________________________________   _______________________________
         elif Opcion == "5":
             print(f"\tJugador: {Jugador.Nombre} {Jugador.ApellidoPaterno}")
             print(f"\tSaldo actual: {Jugador.ConsultarSaldo():.2f} soles")
+            input(f"\t{Colors.BLUE}Presiona Enter para continuar...{Colors.RESET}")
+            os.system('cls' if os.name == 'nt' else 'clear')
         elif Opcion == "6":
             from Csv.graficos import GraficarApuestasPorUsuario
             GraficarApuestasPorUsuario(Jugador.Usuario)
         elif Opcion == "7":
             print("\tSesion cerrada, hasta pronto futuro millonario!")
+            input(f"\t{Colors.BLUE}Presiona Enter para continuar...{Colors.RESET}")
+            os.system('cls' if os.name == 'nt' else 'clear')
             break
         else:
             print("\tOpcion incorrecta, por favor, intente nuevamente.")
