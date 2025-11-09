@@ -1,2 +1,20 @@
 Jugador,Monto,Eleccion,Resultado,SaldoRestante
 pok,212.0,rojo,negro,128980.0
+pok,12.0,rojo,rojo,1305.0,True
+paquitobestoprofe,323.0,negro,negro,2255.0,True
+"test","","rojo","rojo","20"
+"test","","negro","rojo","0"
+"test","","[1, 2, 3]","[1, 2, 3]","6"
+"ralp","932.0","30","23","931081.21"
+"ralp","132.0","","3","931477.21"
+"pk","321.0","rojo","rojo","9713.0"
+"pk","932.0","19","7","8781.0"
+"pk","923.0","negro","rojo","7858.0"
+"pk","20.0","19","11","7838.0"
+"p","121.0","rojo","negro","9329271.0"
+"p","1212.0","negro","negro","9330483.0"
+"p","121.0","rojo","negro","9330362.0"
+"pok","93.0","rojo","rojo","19414.0"
+"pok","193.0","negro","rojo","19221.0"
+"pok","12.0","32","2","19209.0"
+"pan","121.0","29","17","1811.0"

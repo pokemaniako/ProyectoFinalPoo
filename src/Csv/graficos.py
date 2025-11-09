@@ -1,46 +1,40 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
-
-# Rutas para los archivos
-XlsxPath = os.path.join(os.path.dirname(__file__), 'Apuestas.xlsx')
+input("validado")
 CsvPath = os.path.join(os.path.dirname(__file__), 'Apuestas.csv')
 
 def GuardarApuestaCsv(Apuesta):
-    """Guarda la apuesta en CSV y luego intenta convertir a XLSX."""
-    df_new = pd.DataFrame([Apuesta])
-    
-    # Primero, siempre guardamos en CSV (nuestro respaldo seguro)
+    Safe = {}
+    for k, v in Apuesta.items():
+        if isinstance(v, (list, tuple, dict)):
+            Safe[k] = str(v)
+        else:
+            Safe[k] = v
+
+    DfRow = pd.DataFrame([Safe])
+
     if not os.path.isfile(CsvPath):
-        df_new.to_csv(CsvPath, index=False)
+        DfRow.to_csv(CsvPath, index=False, quoting=1, encoding='utf-8')
     else:
-        df_new.to_csv(CsvPath, mode='a', header=False, index=False)
-    
-    try:
-        # Intentar crear/actualizar el XLSX desde el CSV completo
-        df_complete = pd.read_csv(CsvPath)
-        df_complete.to_excel(XlsxPath, index=False, engine=None)  # engine=None intentará usar el mejor disponible
-    except Exception as e:
-        # Si falla la conversión a XLSX, no hay problema, ya tenemos el CSV
-        print(f"Nota: Los datos están seguros en CSV. XLSX no disponible: {e}")
+        try:
+            Cols = pd.read_csv(CsvPath, engine='python', on_bad_lines='skip', encoding='utf-8', nrows=0).columns.tolist()
+            DfRow = DfRow.reindex(columns=Cols, fill_value='')
+        except Exception:
+            pass
+        DfRow.to_csv(CsvPath, mode='a', header=False, index=False, quoting=1, encoding='utf-8')
+
+    return
 
 
 def GraficarApuestasPorUsuario(NombreUsuario):
-    """Genera un gráfico de barras de apuestas ganadas y perdidas para el usuario."""
-    # Cerrar todas las figuras existentes
     plt.close('all')
-    
-    # Primero intentamos leer el XLSX, si falla usamos el CSV
     try:
-        if os.path.isfile(XlsxPath):
-            df = pd.read_excel(XlsxPath, engine=None)  # engine=None intentará usar el mejor disponible
-        else:
-            df = pd.read_csv(CsvPath)  # Si no hay XLSX, usar CSV
+        Df = pd.read_csv(CsvPath, engine='python', on_bad_lines='skip', encoding='utf-8')
     except Exception:
-        # Si falla la lectura del XLSX, intentar con CSV
         if os.path.isfile(CsvPath):
             try:
-                df = pd.read_csv(CsvPath)
+                Df = pd.read_csv(CsvPath, engine='python', on_bad_lines='skip', encoding='utf-8')
             except Exception as e:
                 print(f"Error al leer el archivo de datos: {e}")
                 return
@@ -48,24 +42,50 @@ def GraficarApuestasPorUsuario(NombreUsuario):
             print("No hay apuestas registradas todavía.")
             return
 
-    if 'Jugador' not in df.columns or 'ApuestaGanada' not in df.columns:
-        # Si no existe la columna ApuestaGanada, intentamos determinar por SaldoRestante y MontoApostado
-        if 'SaldoRestante' not in df.columns or 'MontoApostado' not in df.columns:
-            print("El archivo de datos no contiene las columnas necesarias.")
-            return
-        # Calculamos si ganó comparando el saldo restante con el monto apostado
-        df['ApuestaGanada'] = df.apply(lambda row: row['SaldoRestante'] > row['MontoApostado'], axis=1)
+    if 'Jugador' not in Df.columns:
+        print("El archivo de datos no contiene las columnas necesarias.")
+        return
 
-    dfUsuario = df[df['Jugador'] == NombreUsuario]
-    if dfUsuario.empty:
+    def NormalizeBoolSeries(S):
+        if S.dtype == bool:
+            return S
+        def ToBool(V):
+            if pd.isna(V):
+                return False
+            if isinstance(V, (bool,)):
+                return V
+            if isinstance(V, (int, float)):
+                return V != 0
+            Vs = str(V).strip().lower()
+            return Vs in ('true', '1', 'yes', 'si')
+        return S.apply(ToBool)
+
+    if 'ApuestaGanada' in Df.columns:
+        Df['ApuestaGanada'] = NormalizeBoolSeries(Df['ApuestaGanada'])
+    else:
+        if 'Bono' in Df.columns:
+            BonoNum = pd.to_numeric(Df['Bono'], errors='coerce').fillna(0)
+            Df['ApuestaGanada'] = BonoNum > 0
+        elif 'Eleccion' in Df.columns and 'Resultado' in Df.columns:
+            Df['ApuestaGanada'] = Df['Eleccion'].astype(str).str.strip().str.lower() == Df['Resultado'].astype(str).str.strip().str.lower()
+        else:
+            MontoCol = 'Monto' if 'Monto' in Df.columns else ('MontoApostado' if 'MontoApostado' in Df.columns else None)
+            if 'SaldoRestante' not in Df.columns or MontoCol is None:
+                print("El archivo de datos no contiene las columnas necesarias.")
+                return
+            SaldoNum = pd.to_numeric(Df['SaldoRestante'], errors='coerce')
+            MontoNum = pd.to_numeric(Df[MontoCol], errors='coerce')
+            Df['ApuestaGanada'] = SaldoNum > MontoNum
+
+    DfUsuario = Df[Df['Jugador'] == NombreUsuario]
+    if DfUsuario.empty:
         print("No hay apuestas para este usuario.")
         return
 
-    # Contar apuestas ganadas y perdidas
-    Ganadas = dfUsuario[dfUsuario['ApuestaGanada'] == True].shape[0]
-    Perdidas = dfUsuario[dfUsuario['ApuestaGanada'] == False].shape[0]
+    Ganadas = DfUsuario[DfUsuario['ApuestaGanada'] == True].shape[0]
+    Perdidas = DfUsuario[DfUsuario['ApuestaGanada'] == False].shape[0]
     Total = Ganadas + Perdidas
-    
+
     if Total == 0:
         print("No hay apuestas registradas para este usuario.")
         return
@@ -73,26 +93,22 @@ def GraficarApuestasPorUsuario(NombreUsuario):
     PorcentajeGanadas = (Ganadas / Total) * 100
     PorcentajePerdidas = (Perdidas / Total) * 100
 
-    # Crear una única figura
-    fig, ax = plt.subplots(figsize=(8, 6))
-    bars = ax.bar(['Ganadas', 'Perdidas'], [Ganadas, Perdidas], color=['green', 'red'])
+    Fig, Ax = plt.subplots(figsize=(8, 6))
+    Bars = Ax.bar(['Ganadas', 'Perdidas'], [Ganadas, Perdidas], color=['green', 'red'])
     
-    # Añadir etiquetas con valores exactos sobre las barras
-    for bar in bars:
-        height = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width()/2., height,
-                f'{int(height)}',
+    for Bar in Bars:
+        Height = Bar.get_height()
+        Ax.text(Bar.get_x() + Bar.get_width()/2., Height,
+                f'{int(Height)}',
                 ha='center', va='bottom')
 
-    ax.set_title(f'Historial de Apuestas de {NombreUsuario}')
-    ax.set_xlabel('Resultado')
-    ax.set_ylabel('Cantidad de Apuestas')
+    Ax.set_title(f'Historial de Apuestas de {NombreUsuario}')
+    Ax.set_xlabel('Resultado')
+    Ax.set_ylabel('Cantidad de Apuestas')
     
-    # Ajustar el diseño y mostrar
     plt.tight_layout()
     plt.show()
     
-    # Cerrar la figura actual
     plt.close()
     
     print(f"\nResumen de apuestas de {NombreUsuario}:")

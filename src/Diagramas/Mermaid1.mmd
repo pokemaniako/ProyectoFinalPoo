@@ -1,8 +1,5 @@
-#Opcion 1, mejorar todo el diagrama e Implementar el uso de las funciones de jugador, de las apuestas, poner nexos del main y ya
-#Opcion 2, dividir el diagrama en 2 partes, para usuario y para apuestas, cada uno con sus respectivas funciones y que hacen estas funciones, que parametros
-#tienen, variables, etc...
 classDiagram
-    class Jugador {
+    class Persona {
         - Nombre : string
         - ApellidoPaterno : string
         - ApellidoMaterno : string
@@ -10,20 +7,59 @@ classDiagram
         - Edad : int
         - Usuario : string
         - Contrasena : string
+        <<entity>>
+    }
+
+    class Jugador {
         - Saldo : float
+        - Apuestas : list
+        + ConsultarSaldo() : float
+        + ActualizarSaldo(monto : float) : float
+        + TieneSaldoSuficiente(monto : float) : bool
+        + AgregarApuesta(ap : dict) : void
+        + ObtenerHistorial() : list
+        + RegistrarApuesta(monto: float, tipo: string, resultado: any) : void
+        <<entity>>
+    }
+
+    class Administrador {
+        - NivelAcceso : int
+        + GenerarReporte() : string
+        + GestionarJugadores() : string
+        <<entity>>
+    }
+
+    class GestionJugadores {
+        - Jugadores : list<Jugador>
+        + AgregarJugador(j : Jugador) : void
+        + BuscarPorCredenciales(usuario : string, contrasena : string) : Jugador
+        + ExisteUsuario(usuario : string) : bool
+        + ObtenerTodos() : list<Jugador>
+        <<service>>
     }
 
     class Validador {
-        + ValidarTexto()
-        + ValidarGenero()
-        + ValidarNumero()
-        + ValidarDecimal()
+        + Validador(dato, tipo, mensajeError, restriccion) : any
+        + ValidarMontoPositivo(monto: float) : bool
+        + ValidarNumeroRuleta(numero: int) : bool
+        + ValidarNumerosDado(numeros: list) : bool
+        <<utility>>
     }
 
-    class SistemaCasino {
-        + RegistrarJugador()
+    class Apuesta {
+        - Jugador : Jugador
+        - Monto : float
+        - Tipo : string
+        - Resultado : any
+        - Bono : float
+        <<entity>>
     }
 
-    SistemaCasino "1" o-- "1" Jugador : Crea >
-    SistemaCasino "1" o-- "*" Validador : Usa >
-#has peee gonza
+    Persona <|-- Jugador
+    Persona <|-- Administrador
+    GestionJugadores "1" o-- "*" Jugador : gestiona
+    Jugador "1" o-- "*" Apuesta : realiza
+    Validador <.. Jugador : usa
+    Validador <.. GestionJugadores : usa
+    Validador <.. Apuesta : valida
+

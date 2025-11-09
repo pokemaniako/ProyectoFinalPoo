@@ -1,9 +1,10 @@
 import jugadores
 import apuestas as ap
+from colores import Colors
 
 def MenuDeInicio():
     while True:
-        print(""" 
+        print(f"""{Colors.BLUE}
               ____________________________________________________________________________________
              /_____/_____/_____/_____/_____/_____/_____/_____/_____/_____/_____/_____/_____/_____/ 
             ._. /\     __________.__                                 .__    .___           /\  ._. 
@@ -14,7 +15,7 @@ def MenuDeInicio():
             |_|     \/         \/        \/     \/          \/     \/        \/        \/      |_| 
             \____________________________________________________________________________________/
             \_____\_____\_____\_____\_____\_____\_____\_____\_____\_____\_____\_____\_____\_____/
-            
+    {Colors.YELLOW}        
                 ::::::::::::::::::::::::::::::::::::::::::--------------------------------------
                 ::::::::::::::::::::::::::::::::::::::::::--------------------------------------
                 ::::::::::::::::::::::::::::::::::::::::::------:-------------------------------
@@ -55,7 +56,10 @@ def MenuDeInicio():
                 ......................        ....     ...    .       ...    ..:::::::::::::::::
                 ..............................................................:::::::.::::::::::
                 .................................................................:....::::::::::
-           _______________________________________________________________________________________ 
+    {Colors.RESET}
+    {Colors.CYAN}
+           _______________________________________________________________________________________
+           
             ____                   _                                       _ _                 ___  
            / __ \                 | |                                     | (_)               |__ \ 
           | |  | |_   _  ___    __| | ___  ___  ___  __ _   _ __ ___  __ _| |_ ______ _ _ __     ) |
@@ -63,11 +67,12 @@ def MenuDeInicio():
           | |__| | |_| |  __/ | (_| |  __/\__ \  __/ (_| | | | |  __/ (_| | | |/ / (_| | |     |_|  
           \___\_\ \__,_|\___|  \__,_|\___||___/\___|\__,_| |_|  \___|\__,_|_|_/___\__,_|_|     (_)  
           ____________________________________________________________________________________""")
+        
         print("\t  1. Registrarse")
         print("\t  2. Iniciar sesión")
         print("\t  3. Salir")
         print("\t" + "=" * 52)
-        rpta = input("\tSeleccione una opción: ")
+        rpta = input(f"\t{Colors.MAGENTA}Seleccione una opción: {Colors.RESET}")
         if rpta == "1":
             Jugador = jugadores.RegistrarJugador()
             if Jugador:
@@ -77,7 +82,8 @@ def MenuDeInicio():
             if Jugador:
                 MenuJugador(Jugador)
         elif rpta == "3":
-            print("""
+            print(F"""
+            {Colors.GREEN}
             ::::::::::::::::::::::::::::::::::::::::::--------------------------------------
             ::::::::::::::::::::::::::::::::::::::::::--------------------------------------
             ::::::::::::::::::::::::::::::::::::::::::------:-------------------------------
@@ -117,18 +123,39 @@ def MenuDeInicio():
             ....................  =--.....==. ===:..=.==+-... ++=..  =++::::::::::::::::::::
             ......................        ....     ...    .       ...    ..:::::::::::::::::
             ..............................................................:::::::.::::::::::
-            .................................................................:....::::::::::""")
-            print("\t   Gracias por visitar. ¡Hasta pronto!")
+            .................................................................:....::::::::::
+            {Colors.RESET}
+            """)
+            print("\t   Gracias por visitarnos, juegue con cuidado, ¡Hasta pronto!")
             break
         else:
             print("\tOpción inválida. Por favor, intente nuevamente.")
-
+"""         
+                                                            
+                                                            
+                                                            
+                                                            
+                                                            
+                                                            
+"""
 def MenuJugador(Jugador):
     while True:
-        print("\n" + "          ************************************************")
-        print(f"\t  Jugador: {Jugador.Nombre}")
-        print("          ************************************************")
-        print("""\t1.- Rojo o Negro:
+
+        print(f"""{Colors.MAGENTA}\t
+____________________________________________   _______________________________ 
+|      _                       _       _    | |     _____  ______ _______     |
+      | |_   _  _  _  _  _  _ |_| ___ | |__         |  _ \|  ____|__   __|    
+  _   | | | | |/ _` |/ _` |/ _` |/ _ \| '__|        | |_) | |__     | |     
+ | |__| | |_| | (_| | (_| | (_| | (_) | |           |  _ <|  __|    | |
+  \____/ \__,_|\__, |\__,_|\__,_|\___/|_|           | |_) | |____   | |
+                __/ |                               |____/|______|  |_|         
+|______________|___/ ______________________|  |_______________________________|
+ Usuario: {Jugador.Usuario}
+ Nombre:  {Jugador.Nombre} {Jugador.ApellidoPaterno}                           
+|__________________________________________|
+{Colors.YELLOW}BET: Saldo actual: {Jugador.ConsultarSaldo():.2f} soles{Colors.RESET}""")
+
+        print(f"""\t{Colors.RED}1.- Rojo o Negro:
                     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
                     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
                     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -152,13 +179,14 @@ def MenuJugador(Jugador):
                     @@@@@@@@@@@@@@@@@@@@@@@%%@@@@@@@@@@@@@@@@@@@@
                     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
                     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                    {Colors.RESET}
                     Si aciertas el color:
                     Ganas lo de tu apuesta (te suman el monto apostado a tu saldo).
                     Si fallas:
                     Pierdes el monto apostado
                     ************************************************
                     """)
-        print("""\t2.- Ruleta:
+        print(F"""\t{Colors.GREEN}2.- Ruleta:
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                     %%%@%%%%%@%%%%%@%%%%%%%%%%%%%@%%%%%%%%@%%%%%%%@%%@
                     %%%%%%%%%%%%%%%%%%%%%%%%+*#%%%%%%%%%%%%%%%%%%%%%%%
@@ -176,13 +204,14 @@ def MenuJugador(Jugador):
                     @%%@%%@%%@%==----------------===+++===+*%%%@%%@%%@
                     %%%%%%%%%%%%%%##:::----:-----------##%%%%%%%%%%%%%
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                    {Colors.RESET}
                     Si aciertas el número:
                     Ganas el 600% de tu apuesta (te suman 6 veces el monto apostado a tu saldo).
                     Si fallas:
                     Pierdes el monto apostado.
                     ************************************************
                     """)
-        print("""\t3.- Lanza el dado:
+        print(f"""\t{Colors.WHITE}3.- Lanza el dado:
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -206,6 +235,7 @@ def MenuJugador(Jugador):
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                    {Colors.RESET}
                     Si el dado cae en tu primer número elegido:
                     Ganas el 300% de tu apuesta (te suman 3 veces el monto apostado).
                     Si el dado cae en tu segundo número elegido:
@@ -217,11 +247,12 @@ def MenuJugador(Jugador):
                     ************************************************
                     """)        
         print("\t  4. Ver historial de apuestas")
-        print("\t  5. Consultar saldo")
-        print("\t  6. Ver gráfico de apuestas")
-        print("\t  7. Cerrar sesión")
-        print("\t" + "=" * 52)
-        Opcion = input("\tSeleccione una opción: ")
+        print(f"{Colors.BLUE}\t  5. Consultar saldo{Colors.RESET}")
+        print(f"{Colors.GREEN}\t  6. Ver grafico de apuestas{Colors.RESET}")
+        print(f"{Colors.RED}\t  7. Cerrar sesion{Colors.RESET}")
+        print(f"{Colors.MAGENTA}\t" + "=" * 52)
+
+        Opcion = input(f"\tSeleccione una opcion: {Colors.RESET}")
         if Opcion == "1":
             ap.ApostarRojoNegro(Jugador)
         elif Opcion == "2":
@@ -237,7 +268,7 @@ def MenuJugador(Jugador):
             from Csv.graficos import GraficarApuestasPorUsuario
             GraficarApuestasPorUsuario(Jugador.Usuario)
         elif Opcion == "7":
-            print("\tSesión cerrada. ¡Hasta luego!")
+            print("\tSesion cerrada, hasta pronto futuro millonario!")
             break
         else:
-            print("\tOpción incorrecta. Por favor, intente nuevamente.")
+            print("\tOpcion incorrecta, por favor, intente nuevamente.")
