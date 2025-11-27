@@ -29,7 +29,6 @@ class Jugador(Persona):
     
     def ObtenerHistorial(self):
         return self.Apuestas
-#Nota: todavia falta implementar en el menu de inicio opcion de admin y usuario, la estructura de clases con herencia y polimorfismo ya esta
 class Administrador(Persona):
     def __init__(self, Nombre, ApellidoPaterno, ApellidoMaterno, Genero, Edad, Usuario, Contraseña, NivelAcceso):
         super().__init__(Nombre, ApellidoPaterno, ApellidoMaterno, Genero, Edad, Usuario, Contraseña)
