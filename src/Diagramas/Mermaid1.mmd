@@ -1,3 +1,4 @@
+```mermaid
 classDiagram
     class Persona {
         - Nombre : string
@@ -18,7 +19,6 @@ classDiagram
         + TieneSaldoSuficiente(monto : float) : bool
         + AgregarApuesta(ap : dict) : void
         + ObtenerHistorial() : list
-        + RegistrarApuesta(monto: float, tipo: string, resultado: any) : void
         <<entity>>
     }
 
@@ -38,28 +38,55 @@ classDiagram
         <<service>>
     }
 
+    class ApuestasModule {
+        + ApostarRojoNegro(j : Jugador) : void
+        + RuletaSimple(j : Jugador) : void
+        + RuletaEuropea(j : Jugador) : void
+        + Blackjack(j : Jugador) : void
+        + LanzaElDado(j : Jugador) : void
+        + VerHistorial(j : Jugador) : void
+        + CalcularValorMano(cartas : list) : int
+        + MostrarManoBlackjack(nombre : string, cartas : list) : void
+        <<service>>
+    }
+
     class Validador {
         + Validador(dato, tipo, mensajeError, restriccion) : any
         + ValidarMontoPositivo(monto: float) : bool
         + ValidarNumeroRuleta(numero: int) : bool
         + ValidarNumerosDado(numeros: list) : bool
+        + ValidarNumeroRangoRuleta(numero: int) : bool
+        + ValidarSeleccionColor(color: string) : bool
+        + ValidarSeleccionParidad(paridad: string) : bool
+        + ValidarSeleccionDocena(docena: string) : bool
+        + ValidarSeleccionColumna(columna: string) : bool
+        + ValidarSeleccionAltoBajo(altobajo: string) : bool
         <<utility>>
     }
 
     class Apuesta {
-        - Jugador : Jugador
-        - Monto : float
+        - Jugador : string
         - Tipo : string
+        - Monto : float
         - Resultado : any
-        - Bono : float
+        - Ganancia : float
+        - SaldoRestante : float
         <<entity>>
+    }
+
+    class Data {
+        + AddApuesta(ap : dict) : void
+        <<persistence>>
     }
 
     Persona <|-- Jugador
     Persona <|-- Administrador
+    
     GestionJugadores "1" o-- "*" Jugador : gestiona
     Jugador "1" o-- "*" Apuesta : realiza
+    ApuestasModule --> Jugador : usa
+    ApuestasModule --> Data : persiste
     Validador <.. Jugador : usa
-    Validador <.. GestionJugadores : usa
+    Validador <.. ApuestasModule : usa
     Validador <.. Apuesta : valida
-
+```

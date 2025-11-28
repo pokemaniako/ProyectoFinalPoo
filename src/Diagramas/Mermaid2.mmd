@@ -1,3 +1,4 @@
+```mermaid
 classDiagram
     class Interfaz {
         + input() : string
@@ -9,19 +10,32 @@ classDiagram
         + ValidarMontoPositivo(monto) : bool
         + ValidarNumeroRuleta(numero) : bool
         + ValidarNumerosDado(numeros) : bool
+        + ValidarNumeroRangoRuleta(numero) : bool
+        + ValidarSeleccionColor(color) : bool
+        + ValidarSeleccionParidad(paridad) : bool
+        + ValidarSeleccionAltoBajo(altobajo) : bool
+        + ValidarSeleccionDocena(docena) : bool
+        + ValidarSeleccionColumna(columna) : bool
         <<utility>>
     }
 
     class Menu {
         + MenuDeInicio() : void
+        + MenuJugadorInicio() : void
         + MenuJugador(j : Jugador) : void
+        + MenuAdminInicio(gestorAdmin) : void
         <<controller>>
     }
 
     class ApuestasModule {
         + ApostarRojoNegro(j : Jugador) : void
-        + Ruleta(j : Jugador) : void
+        + RuletaSimple(j : Jugador) : void
+        + RuletaEuropea(j : Jugador) : void
+        + Blackjack(j : Jugador) : void
         + LanzaElDado(j : Jugador) : void
+        + VerHistorial(j : Jugador) : void
+        + CalcularValorMano(cartas : list) : int
+        + MostrarManoBlackjack(nombre : string, cartas : list) : void
         <<module>>
     }
 
@@ -41,14 +55,16 @@ classDiagram
     }
 
     class Graficos {
-        + GuardarApuestaCsv(ap : dict) : void
-        + GraficarApuestasPorUsuario(nombre : string) : void
+        + GraficarDistribucionGananciasPerdidas(usuario : string) : void
+        + GraficarSaldoEnTiempo(usuario : string) : void
         <<persistence>>
     }
 
     Interfaz --> Validador : "input() -> Validador"
     Validador --> Menu : "datos validados"
     Menu --> ApuestasModule : "llama"
+    Menu --> Jugador : "maneja"
     ApuestasModule --> Jugador : "actualiza saldo / agrega apuesta"
     ApuestasModule --> Data : "data.AddApuesta"
     Data --> Graficos : "persiste (CSV/XLSX)"
+```

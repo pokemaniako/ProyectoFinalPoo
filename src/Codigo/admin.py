@@ -7,7 +7,7 @@ def MenuAdmin(Admin, GestionJugadores_Inst, GestionAdministradores_Inst):
     while True:
         print(f"""{Colors.RED}
         ╔════════════════════════════════════════════╗
-        ║         PANEL DE ADMINISTRADOR            ║
+        ║         PANEL DE ADMINISTRADOR             ║
         ║         Bienvenido: {Admin.Usuario:<24}║
         ╚════════════════════════════════════════════╝{Colors.RESET}
         """)

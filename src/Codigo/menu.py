@@ -429,15 +429,13 @@ ____________________________________________   _______________________________
         if Opcion == "1":
             ap.ApostarRojoNegro(Jugador)
         elif Opcion == "2":
-            ap.Ruleta(Jugador)
+            ap.RuletaSimple(Jugador)
         elif Opcion == "3":
             ap.LanzaElDado(Jugador)
         elif Opcion == "4":
-            from Codigo.JuegosNuevos import RuletaEuropea
-            RuletaEuropea(Jugador)
+            ap.RuletaEuropea(Jugador)
         elif Opcion == "5":
-            from Codigo.JuegosNuevos import Blackjack
-            Blackjack(Jugador)
+            ap.Blackjack(Jugador)
             
         elif Opcion == "6":
             ap.VerHistorial(Jugador)

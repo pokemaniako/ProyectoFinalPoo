@@ -1,0 +1,21 @@
+# Normalize line endings to avoid LF <-> CRLF warnings on Windows
+# Keep LF in the repository for text files; working copies on Windows
+# will use CRLF only if explicitly desired. This prevents Git warnings
+# like: "LF will be replaced by CRLF the next time Git touches it".
+
+# Default behavior: detect text files automatically
+* text=auto
+
+# Force LF in the repo for these text file types
+*.mmd text eol=lf
+*.md  text eol=lf
+*.py  text eol=lf
+*.csv text eol=lf
+
+# Binary files should be left untouched
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+
+# End of file
