@@ -1,271 +1,161 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+from pathlib import Path
 
-# ruta al archivo csv de apuestas como cadena
-file_path = __file__
-normalized = file_path.replace('\\', '/')
-csv_dir = normalized.rsplit('/', 1)[0]
-CsvPath = csv_dir + '/Apuestas.csv'
+# Ruta al archivo CSV de apuestas (Path object para operaciones más seguras)
+CsvPath = Path(__file__).parent / 'Apuestas.csv'
 
-def file_exists(path):
+def CargarDatos(NombreUsuario):
+    """Carga y normaliza datos del CSV para un usuario.
+
+    Devuelve un DataFrame filtrado por `Jugador` o None si no hay datos.
+    """
     try:
-        with open(path, 'r', encoding='utf-8'):
-            return True
-    except Exception:
-        return False
-
-def GuardarApuestaCsv(Apuesta):
-    Safe = {}
-    for k, v in Apuesta.items():
-        if isinstance(v, (list, tuple, dict)):
-            Safe[k] = str(v)
-        else:
-            Safe[k] = v
-
-    DfRow = pd.DataFrame([Safe])
-
-    if not file_exists(CsvPath):
-        DfRow.to_csv(CsvPath, index=False, quoting=1, encoding='utf-8')
-    else:
-        # Detect if the existing CSV lost its header (first row contains data instead)
-        # leer la primera linea para detectar cabecera dañada
-        try:
-            with open(CsvPath, 'r', encoding='utf-8') as fh:
-                first_line = fh.readline().strip()
-        except Exception:
-            first_line = ''
-
-        # If the first line does not contain expected column names, try to repair
-        if first_line and 'Jugador' not in first_line and (',' in first_line or '"' in first_line):
-            try:
-                existing = pd.read_csv(CsvPath, engine='python', header=None, on_bad_lines='skip', encoding='utf-8')
-                # assign sensible column names based on current Apuesta keys
-                expected_cols = list(DfRow.columns)
-                # If the file has same number of columns as expected, set them; otherwise keep numeric names
-                if existing.shape[1] == len(expected_cols):
-                    existing.columns = expected_cols
-                # overwrite file with header
-                existing.to_csv(CsvPath, index=False, quoting=1, encoding='utf-8')
-            except Exception:
-                # if repair fails, continue and append — avoid crashing the program
-                pass
-
-        try:
-            Cols = pd.read_csv(CsvPath, engine='python', on_bad_lines='skip', encoding='utf-8', nrows=0).columns.tolist()
-            DfRow = DfRow.reindex(columns=Cols, fill_value='')
-        except Exception:
-            pass
-        DfRow.to_csv(CsvPath, mode='a', header=False, index=False, quoting=1, encoding='utf-8')
-
-    return
-
-
-def GraficarApuestasPorUsuario(NombreUsuario):
-    plt.close('all')
-    try:
+        if not CsvPath.exists():
+            # No hay archivo aún
+            print(f"No se encontró {CsvPath}. Aún no hay apuestas guardadas.")
+            return None
         Df = pd.read_csv(CsvPath, engine='python', on_bad_lines='skip', encoding='utf-8')
-    except Exception:
-        if file_exists(CsvPath):
-            try:
-                Df = pd.read_csv(CsvPath, engine='python', on_bad_lines='skip', encoding='utf-8')
-            except Exception as e:
-                print(f"Error al leer el archivo de datos: {e}")
-                return
-        else:
-            print("No hay apuestas registradas todavía.")
-            return
+    except Exception as e:
+        print(f"Error al leer CSV: {e}")
+        return None
 
     if 'Jugador' not in Df.columns:
-        print("El archivo de datos no contiene las columnas necesarias.")
-        return
+        print("El archivo no contiene la columna 'Jugador'.")
+        return None
 
-    def NormalizeBoolSeries(S):
-        if S.dtype == bool:
-            return S
-        def ToBool(V):
-            if pd.isna(V):
-                return False
-            if isinstance(V, (bool,)):
-                return V
-            if isinstance(V, (int, float)):
-                return V != 0
-            Vs = str(V).strip().lower()
-            return Vs in ('true', '1', 'yes', 'si')
-        return S.apply(ToBool)
-
-    if 'ApuestaGanada' in Df.columns:
-        Df['ApuestaGanada'] = NormalizeBoolSeries(Df['ApuestaGanada'])
-    else:
-        if 'Bono' in Df.columns:
-            BonoNum = pd.to_numeric(Df['Bono'], errors='coerce').fillna(0)
-            Df['ApuestaGanada'] = BonoNum > 0
-        elif 'Eleccion' in Df.columns and 'Resultado' in Df.columns:
-            Df['ApuestaGanada'] = Df['Eleccion'].astype(str).str.strip().str.lower() == Df['Resultado'].astype(str).str.strip().str.lower()
-        else:
-            MontoCol = 'Monto' if 'Monto' in Df.columns else ('MontoApostado' if 'MontoApostado' in Df.columns else None)
-            if 'SaldoRestante' not in Df.columns or MontoCol is None:
-                print("El archivo de datos no contiene las columnas necesarias.")
-                return
-            SaldoNum = pd.to_numeric(Df['SaldoRestante'], errors='coerce')
-            MontoNum = pd.to_numeric(Df[MontoCol], errors='coerce')
-            Df['ApuestaGanada'] = SaldoNum > MontoNum
-
-    DfUsuario = Df[Df['Jugador'] == NombreUsuario]
+    DfUsuario = Df[Df['Jugador'] == NombreUsuario].copy()
     if DfUsuario.empty:
-        print("No hay apuestas para este usuario.")
-        return
+        print(f"No hay apuestas para el usuario: {NombreUsuario}")
+        return None
 
-    Ganadas = DfUsuario[DfUsuario['ApuestaGanada'] == True].shape[0]
-    Perdidas = DfUsuario[DfUsuario['ApuestaGanada'] == False].shape[0]
-    Total = Ganadas + Perdidas
+    # Reset index for plotting convenience
+    DfUsuario.reset_index(drop=True, inplace=True)
+    return DfUsuario
 
-    if Total == 0:
-        print("No hay apuestas registradas para este usuario.")
-        return
+def NormalizarApuestaGanada(Df):
+    """Normaliza la columna ApuestaGanada"""
+    if 'ApuestaGanada' not in Df.columns:
+        if 'Ganancia' in Df.columns:
+            Df['ApuestaGanada'] = pd.to_numeric(Df['Ganancia'], errors='coerce') > 0
+        else:
+            Df['ApuestaGanada'] = False
+    return Df
 
-    PorcentajeGanadas = (Ganadas / Total) * 100
-    PorcentajePerdidas = (Perdidas / Total) * 100
-
-    Fig, Ax = plt.subplots(figsize=(8, 6))
-    Bars = Ax.bar(['Ganadas', 'Perdidas'], [Ganadas, Perdidas], color=['green', 'red'])
+def GuardarApuestaCsv(Apuesta):
+    """Guarda una apuesta en el CSV"""
+    Safe = {k: str(v) if isinstance(v, (list, tuple, dict)) else v for k, v in Apuesta.items()}
+    DfRow = pd.DataFrame([Safe])
     
-    for Bar in Bars:
-        Height = Bar.get_height()
-        Ax.text(Bar.get_x() + Bar.get_width()/2., Height,
-                f'{int(Height)}',
-                ha='center', va='bottom')
-
-    Ax.set_title(f'Historial de Apuestas de {NombreUsuario}')
-    Ax.set_xlabel('Resultado')
-    Ax.set_ylabel('Cantidad de Apuestas')
-    
-    plt.tight_layout()
-    plt.show()
-    
-    plt.close()
-    
-    print(f"\nResumen de apuestas de {NombreUsuario}:")
-    print(f"Total de apuestas: {Total}")
-    print(f"Ganadas: {Ganadas} ({PorcentajeGanadas:.1f}%)")
-    print(f"Perdidas: {Perdidas} ({PorcentajePerdidas:.1f}%)")
-
-
-def GraficarSaldoEnTiempo(NombreUsuario):
-    plt.close('all')
     try:
-        Df = pd.read_csv(CsvPath, engine='python', on_bad_lines='skip', encoding='utf-8')
-    except Exception:
-        if file_exists(CsvPath):
-            try:
-                Df = pd.read_csv(CsvPath, engine='python', on_bad_lines='skip', encoding='utf-8')
-            except Exception as e:
-                print(f"Error al leer el archivo de datos: {e}")
-                return
+        if not Path(CsvPath).exists():
+            DfRow.to_csv(CsvPath, index=False, quoting=1, encoding='utf-8')
         else:
-            print("No hay apuestas registradas todavía.")
-            return
+            Cols = pd.read_csv(CsvPath, engine='python', on_bad_lines='skip', encoding='utf-8', nrows=0).columns.tolist()
+            DfRow = DfRow.reindex(columns=Cols, fill_value='')
+            DfRow.to_csv(CsvPath, mode='a', header=False, index=False, quoting=1, encoding='utf-8')
+    except Exception as e:
+        print(f"Error al guardar apuesta: {e}")
 
-    if 'Jugador' not in Df.columns or 'SaldoRestante' not in Df.columns:
-        print("El archivo de datos no contiene las columnas necesarias.")
-        return
 
-    DfUsuario = Df[Df['Jugador'] == NombreUsuario].reset_index(drop=True)
-    if DfUsuario.empty:
-        print("No hay apuestas para este usuario.")
-        return
-
-    SaldoNumeros = pd.to_numeric(DfUsuario['SaldoRestante'], errors='coerce').fillna(0)
-    Indices = range(1, len(SaldoNumeros) + 1)
-
-    Fig, Ax = plt.subplots(figsize=(10, 6))
-    Ax.plot(Indices, SaldoNumeros, marker='o', linestyle='-', color='blue', linewidth=2, markersize=6)
-    Ax.set_title(f'Evolución del Saldo de {NombreUsuario}')
-    Ax.set_xlabel('Número de Apuesta')
-    Ax.set_ylabel('Saldo Restante')
-    Ax.grid(True, alpha=0.3)
+def Dashboard(NombreUsuario):
+    """Dashboard con 3 gráficos: pizza (ganadas/perdidas), línea (evolución saldo) y barras (por tipo de juego)"""
+    plt.close('all')
     
-    plt.tight_layout()
+    DfUsuario = CargarDatos(NombreUsuario)
+    if DfUsuario is None:
+        return
+    
+    DfUsuario = NormalizarApuestaGanada(DfUsuario.copy())
+    
+    # Crear figura con 3 subplots
+    Fig, Axes = plt.subplots(1, 3, figsize=(15, 5))
+    Fig.suptitle(f'Dashboard de Apuestas - {NombreUsuario}', fontsize=14, fontweight='bold')
+    
+    # --- Gráfico 1: Pizza (Ganadas vs Perdidas) ---
+    Ganadas = (DfUsuario['ApuestaGanada'] == True).sum()
+    Perdidas = (DfUsuario['ApuestaGanada'] == False).sum()
+    
+    Axes[0].pie([Ganadas, Perdidas], labels=[f'Ganadas ({Ganadas})', f'Perdidas ({Perdidas})'], 
+                colors=['green', 'red'], autopct='%1.1f%%', startangle=90)
+    Axes[0].set_title('Distribución Ganadas/Perdidas')
+    
+    # --- Gráfico 2: Línea (Evolución del Saldo) ---
+    if 'SaldoRestante' in DfUsuario.columns:
+        SaldoNumeros = pd.to_numeric(DfUsuario['SaldoRestante'], errors='coerce').fillna(0).values
+        Indices = range(1, len(SaldoNumeros) + 1)
+        Axes[1].plot(Indices, SaldoNumeros, marker='o', linestyle='-', color='blue', linewidth=2, markersize=4)
+        Axes[1].set_title('Evolución del Saldo')
+        Axes[1].set_xlabel('Número de Apuesta')
+        Axes[1].set_ylabel('Saldo Restante')
+        Axes[1].grid(True, alpha=0.3)
+    else:
+        Axes[1].text(0.5, 0.5, 'Sin datos de Saldo', ha='center', va='center', transform=Axes[1].transAxes)
+        Axes[1].set_title('Evolución del Saldo')
+    
+    # --- Gráfico 3: Barras (Apuestas por Tipo) ---
+    if 'Tipo' in DfUsuario.columns and DfUsuario['Tipo'].notna().any():
+        # Normalizar a string (evita listas/tuplas serializadas)
+        Tipos = DfUsuario['Tipo'].astype(str).str.strip()
+        # Contar apariciones
+        TiposCuenta = Tipos.value_counts()
+
+        if TiposCuenta.empty:
+            Axes[2].text(0.5, 0.5, 'Sin datos de Tipo', ha='center', va='center', transform=Axes[2].transAxes)
+            Axes[2].set_title('Apuestas por Tipo')
+        else:
+            # Si hay demasiadas categorías, mostrar top N + 'Otros'
+            TopN = 10
+            if len(TiposCuenta) > TopN:
+                top = TiposCuenta.iloc[:TopN].copy()
+                others = TiposCuenta.iloc[TopN:].sum()
+                top['Otros'] = others
+                PlotCounts = top
+            else:
+                PlotCounts = TiposCuenta
+
+            x = list(range(len(PlotCounts)))
+            bars = Axes[2].bar(x, PlotCounts.values, color='skyblue', edgecolor='navy')
+            Axes[2].set_xticks(x)
+            Axes[2].set_xticklabels(PlotCounts.index, rotation=45, ha='right', fontsize=8)
+            Axes[2].set_title('Apuestas por Tipo')
+            Axes[2].set_ylabel('Cantidad')
+
+            # Añadir etiquetas de valor sobre cada barra
+            max_val = PlotCounts.max() if len(PlotCounts) > 0 else 0
+            for i, v in enumerate(PlotCounts.values):
+                Axes[2].text(i, v + max_val * 0.02 + 0.01, str(int(v)), ha='center', va='bottom', fontsize=8)
+    else:
+        Axes[2].text(0.5, 0.5, 'Sin datos de Tipo', ha='center', va='center', transform=Axes[2].transAxes)
+        Axes[2].set_title('Apuestas por Tipo')
+    
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.show()
-    
     plt.close()
+    
+    # Imprimir resumen
+    print(f"\n{'='*50}")
+    print(f"RESUMEN DE APUESTAS - {NombreUsuario}")
+    print(f"{'='*50}")
+    total = len(DfUsuario)
+    print(f"Total de apuestas: {total}")
+    if total > 0:
+        print(f"Ganadas: {Ganadas} ({Ganadas/total*100:.1f}%)")
+        print(f"Perdidas: {Perdidas} ({Perdidas/total*100:.1f}%)")
+    else:
+        print("Ganadas: 0 (0.0%)")
+        print("Perdidas: 0 (0.0%)")
+    if 'SaldoRestante' in DfUsuario.columns:
+        SaldoFinal = pd.to_numeric(DfUsuario['SaldoRestante'].iloc[-1], errors='coerce')
+        print(f"Saldo Final: {SaldoFinal:.2f}")
+    print(f"{'='*50}\n")
 
 
 def GraficarDistribucionGananciasPerdidas(NombreUsuario):
-    plt.close('all')
-    try:
-        Df = pd.read_csv(CsvPath, engine='python', on_bad_lines='skip', encoding='utf-8')
-    except Exception:
-        if file_exists(CsvPath):
-            try:
-                Df = pd.read_csv(CsvPath, engine='python', on_bad_lines='skip', encoding='utf-8')
-            except Exception as e:
-                print(f"Error al leer el archivo de datos: {e}")
-                return
-        else:
-            print("No hay apuestas registradas todavía.")
-            return
+    """Alias para Dashboard (compatibilidad)"""
+    Dashboard(NombreUsuario)
 
-    if 'Jugador' not in Df.columns:
-        print("El archivo de datos no contiene las columnas necesarias.")
-        return
 
-    def NormalizeBoolSeries(S):
-        if S.dtype == bool:
-            return S
-        def ToBool(V):
-            if pd.isna(V):
-                return False
-            if isinstance(V, (bool,)):
-                return V
-            if isinstance(V, (int, float)):
-                return V != 0
-            Vs = str(V).strip().lower()
-            return Vs in ('true', '1', 'yes', 'si')
-        return S.apply(ToBool)
-
-    if 'ApuestaGanada' in Df.columns:
-        Df['ApuestaGanada'] = NormalizeBoolSeries(Df['ApuestaGanada'])
-    else:
-        if 'Bono' in Df.columns:
-            BonoNum = pd.to_numeric(Df['Bono'], errors='coerce').fillna(0)
-            Df['ApuestaGanada'] = BonoNum > 0
-        elif 'Eleccion' in Df.columns and 'Resultado' in Df.columns:
-            Df['ApuestaGanada'] = Df['Eleccion'].astype(str).str.strip().str.lower() == Df['Resultado'].astype(str).str.strip().str.lower()
-        else:
-            MontoCol = 'Monto' if 'Monto' in Df.columns else ('MontoApostado' if 'MontoApostado' in Df.columns else None)
-            if 'SaldoRestante' not in Df.columns or MontoCol is None:
-                print("El archivo de datos no contiene las columnas necesarias.")
-                return
-            SaldoNum = pd.to_numeric(Df['SaldoRestante'], errors='coerce')
-            MontoNum = pd.to_numeric(Df[MontoCol], errors='coerce')
-            Df['ApuestaGanada'] = SaldoNum > MontoNum
-
-    DfUsuario = Df[Df['Jugador'] == NombreUsuario]
-    if DfUsuario.empty:
-        print("No hay apuestas para este usuario.")
-        return
-
-    Ganadas = DfUsuario[DfUsuario['ApuestaGanada'] == True].shape[0]
-    Perdidas = DfUsuario[DfUsuario['ApuestaGanada'] == False].shape[0]
-    Total = Ganadas + Perdidas
-
-    if Total == 0:
-        print("No hay apuestas registradas para este usuario.")
-        return
-
-    Fig, Ax = plt.subplots(figsize=(8, 6))
-    Colores = ['green', 'red']
-    Etiquetas = [f'Ganadas ({Ganadas})', f'Perdidas ({Perdidas})']
-    Datos = [Ganadas, Perdidas]
-    
-    Wedges, Textos, Autotexts = Ax.pie(Datos, labels=Etiquetas, colors=Colores, autopct='%1.1f%%', startangle=90)
-    
-    for Autotext in Autotexts:
-        Autotext.set_color('white')
-        Autotext.set_fontweight('bold')
-    
-    Ax.set_title(f'Distribución Ganadas/Perdidas de {NombreUsuario}')
-    
-    plt.tight_layout()
-    plt.show()
-    plt.close()
+def GraficarSaldoEnTiempo(NombreUsuario):
+    """Alias para Dashboard (compatibilidad)"""
+    Dashboard(NombreUsuario)

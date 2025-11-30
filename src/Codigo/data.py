@@ -28,5 +28,19 @@ def AddApuesta(Apuesta):
         if Jugador.Usuario == Apuesta["Jugador"]:
             Jugador.AgregarApuesta(Apuesta)
             break
-    from Csv.graficos import GuardarApuestaCsv
-    GuardarApuestaCsv(Apuesta)
+    # Importar el módulo de graficos de forma dinámica sin depender de sys.path
+    try:
+        from Csv.graficos import GuardarApuestaCsv
+        GuardarApuestaCsv(Apuesta)
+    except ModuleNotFoundError:
+        import os
+        import importlib.util
+        graficos_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Csv', 'graficos.py'))
+        if os.path.exists(graficos_path):
+            spec = importlib.util.spec_from_file_location('Csv.graficos', graficos_path)
+            graficos = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(graficos)
+            graficos.GuardarApuestaCsv(Apuesta)
+        else:
+            # si no existe el archivo, simplemente ignorar (no guardar)
+            return

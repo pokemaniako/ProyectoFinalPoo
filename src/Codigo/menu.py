@@ -9,7 +9,7 @@ def MenuDeInicio():
     # Inicializar gestor de administradores
     GestionAdministradores_Inst = GestionAdministradores()
     # Crear admin de prueba (opcional, puedes cambiarlo)
-    AdminPrueba = Administrador("Admin", "Sistema", "Principal", "M", 30, "admin", "admin123", 1)
+    AdminPrueba = Administrador("Admin", "Sistema", "Principal", "M", 30, "carlini", "volteadini", 1)
     GestionAdministradores_Inst.AgregarAdministrador(AdminPrueba)
     
     while True:
@@ -165,8 +165,7 @@ def MenuJugadorInicio():
         
         print("\t  1. Registrarse")
         print("\t  2. Iniciar sesión")
-        print("\t  3. Volver al menú anterior")
-        print("\t  4. salir")
+        print("\t  3. salir")
         print("\t" + "=" * 52)
         rpta = input(f"\t{Colors.MAGENTA}Seleccione una opción: {Colors.RESET}")
         if rpta == "1":
@@ -178,8 +177,6 @@ def MenuJugadorInicio():
             if Jugador:
                 MenuJugador(Jugador)
         elif rpta == "3":
-            break
-        elif rpta == "4":
             print(f"""
                 ::::::::::::::::::::::::::::::::::::::::::--------------------------------------
                 ::::::::::::::::::::::::::::::::::::::::::--------------------------------------
@@ -445,10 +442,19 @@ ____________________________________________   _______________________________
             input(f"\t{Colors.BLUE}Presiona Enter para continuar...{Colors.RESET}")
             Console.clear()
         elif Opcion == "8":
-            from Csv.graficos import GraficarDistribucionGananciasPerdidas, GraficarSaldoEnTiempo
-            # Mostrar primero la distribución (torta) y luego la evolución del saldo (puntos/líneas)
-            GraficarDistribucionGananciasPerdidas(Jugador.Usuario)
-            GraficarSaldoEnTiempo(Jugador.Usuario)
+            # Importar graficos dinámicamente para no depender de paquetes en sys.path
+            import os
+            import importlib.util
+            graficos_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Csv', 'graficos.py'))
+            if os.path.exists(graficos_path):
+                spec = importlib.util.spec_from_file_location('Csv.graficos', graficos_path)
+                graficos = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(graficos)
+                # Mostrar primero la distribución (torta) y luego la evolución del saldo (puntos/líneas)
+                graficos.GraficarDistribucionGananciasPerdidas(Jugador.Usuario)
+                graficos.GraficarSaldoEnTiempo(Jugador.Usuario)
+            else:
+                print(f"{Colors.RED}\t Módulo de gráficos no encontrado{Colors.RESET}")
         elif Opcion == "9":
             print("\tSesion cerrada, hasta pronto futuro millonario!")
             input(f"\t{Colors.BLUE}Presiona Enter para continuar...{Colors.RESET}")

@@ -1,4 +1,3 @@
-```mermaid
 classDiagram
     class Persona {
         - Nombre : string
@@ -8,7 +7,6 @@ classDiagram
         - Edad : int
         - Usuario : string
         - Contrasena : string
-        <<entity>>
     }
 
     class Jugador {
@@ -19,14 +17,12 @@ classDiagram
         + TieneSaldoSuficiente(monto : float) : bool
         + AgregarApuesta(ap : dict) : void
         + ObtenerHistorial() : list
-        <<entity>>
     }
 
     class Administrador {
         - NivelAcceso : int
         + GenerarReporte() : string
         + GestionarJugadores() : string
-        <<entity>>
     }
 
     class GestionJugadores {
@@ -35,7 +31,13 @@ classDiagram
         + BuscarPorCredenciales(usuario : string, contrasena : string) : Jugador
         + ExisteUsuario(usuario : string) : bool
         + ObtenerTodos() : list<Jugador>
-        <<service>>
+    }
+
+    class Menu {
+        + MenuDeInicio() : void
+        + MenuJugadorInicio() : void
+        + MenuJugador(j : Jugador) : void
+        + MenuAdminInicio(gestorAdmin) : void
     }
 
     class ApuestasModule {
@@ -47,7 +49,6 @@ classDiagram
         + VerHistorial(j : Jugador) : void
         + CalcularValorMano(cartas : list) : int
         + MostrarManoBlackjack(nombre : string, cartas : list) : void
-        <<service>>
     }
 
     class Validador {
@@ -61,7 +62,6 @@ classDiagram
         + ValidarSeleccionDocena(docena: string) : bool
         + ValidarSeleccionColumna(columna: string) : bool
         + ValidarSeleccionAltoBajo(altobajo: string) : bool
-        <<utility>>
     }
 
     class Apuesta {
@@ -71,12 +71,19 @@ classDiagram
         - Resultado : any
         - Ganancia : float
         - SaldoRestante : float
-        <<entity>>
     }
 
     class Data {
         + AddApuesta(ap : dict) : void
-        <<persistence>>
+        + FindPlayerByCredentials(usuario : string, contrasena : string) : Jugador
+        + AddJugador(j : Jugador) : void
+    }
+
+    class Graficos {
+        + GuardarApuestaCsv(apuesta : dict) : void
+        + GraficarDistribucionGananciasPerdidas(usuario : string) : void
+        + GraficarSaldoEnTiempo(usuario : string) : void
+        + GraficarApuestasPorUsuario(usuario : string) : void
     }
 
     Persona <|-- Jugador
@@ -84,9 +91,16 @@ classDiagram
     
     GestionJugadores "1" o-- "*" Jugador : gestiona
     Jugador "1" o-- "*" Apuesta : realiza
-    ApuestasModule --> Jugador : usa
+    
+    Menu --> ApuestasModule : llama
+    Menu --> Jugador : maneja
+    Menu --> Graficos : genera reportes
+    
+    ApuestasModule --> Jugador : actualiza saldo / agrega apuesta
     ApuestasModule --> Data : persiste
-    Validador <.. Jugador : usa
-    Validador <.. ApuestasModule : usa
-    Validador <.. Apuesta : valida
-```
+    ApuestasModule --> Validador : valida entrada
+    
+    Data --> Graficos : guarda y recupera datos
+    
+    Validador --> ApuestasModule : valida
+    Validador --> Menu : valida
