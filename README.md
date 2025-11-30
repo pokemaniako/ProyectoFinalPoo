@@ -29,7 +29,7 @@ Está diseñado para jugar **en la consola**, utilizando clases y objetos para o
 
 ```bash
 git clone https://github.com/pokemaniako/ProyectoFinalPoo.git
-cd casino-universitario
+cd src/Codigo/
 ````
 
 2. Ejecutar el script principal:
@@ -37,6 +37,7 @@ cd casino-universitario
 ```bash
 python main.py
 ```
+
 
 
 
