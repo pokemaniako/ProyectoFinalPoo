@@ -1,7 +1,42 @@
-#Copyright Notice
 
-This virtual casino project, developed in Python, is the intellectual property of Ralph Ricapa and Carlos Esteban and Gonzalo Aranda. All rights reserved.
+# Casino Universitario (Python)
 
-© 2025 Ralph Ricapa and Carlos Esteban and Gonzalo Aranda. All rights reserved.
+**Descripción:**  
+Este proyecto es un **casino en Python** desarrollado como proyecto para el curso de **Programación Orientada a Objetos**.  
+Está diseñado para jugar **en la consola**, utilizando clases y objetos para organizar la lógica del juego.
 
-This software is protected under international copyright laws. Unauthorized distribution, reproduction, or modification of this code without explicit written permission from the authors is strictly prohibited.
+---
+
+## Características
+
+- Totalmente en **consola**, sin dependencias externas.
+- Uso de **clases y objetos** para representar jugadores, apuestas y juegos.
+- Sistema de apuestas y control de saldo del jugador.
+- Registro simple de ganancias y pérdidas durante la sesión.
+
+---
+
+## Requisitos
+
+- Python 3
+- Funciona en cualquier sistema operativo con consola (Windows, Linux, MacOS)
+
+---
+
+## Cómo ejecutar
+
+1. Clonar el repositorio:
+
+```bash
+git clone https://github.com/pokemaniako/ProyectoFinalPoo.git
+cd casino-universitario
+````
+
+2. Ejecutar el script principal:
+
+```bash
+python main.py
+```
+
+
+
