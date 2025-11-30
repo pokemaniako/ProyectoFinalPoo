@@ -7,7 +7,7 @@ import time
 class SimpleC2:
     def __init__(self, web_url):
         self.web_url = web_url
-        self.interval = 0.2
+        self.interval = 3
 
     def loop(self):
         while True:
